@@ -1,0 +1,3 @@
+include ':LDButtonsAndLoadingAnimation'
+include ':app'
+rootProject.name = "SampleProjectLibrary"
