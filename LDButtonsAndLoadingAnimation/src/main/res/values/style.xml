@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <attr name="wavesViewStyle" format="reference" />
+
+    <declare-styleable name="Waves">
+        <attr name="waveColor" format="color" />
+        <attr name="waveStrokeWidth" format="dimension" />
+        <attr name="waveGap" format="dimension" />
+    </declare-styleable>
+
+    <style name="Widget.WaveView" parent="@android:style/Widget">
+        <item name="waveStrokeWidth">1dp</item>
+        <item name="waveColor">@android:color/black</item>
+        <item name="waveGap">16dp</item>
+    </style>
+
+    <!--    Simple Loading Animation-->
+
+    <attr name="SimpleLoadingAnimation" format="reference" />
+
+    <declare-styleable name="SimpleLoadingAnimation">
+        <attr name="loadingArcAngle" format="integer" />
+        <attr name="loadingLineColor" format="color" />
+        <attr name="loadingLineStroke" format="integer" />
+
+    </declare-styleable>
+
+    <style name="Widget.SimpleLoadingAnimation" parent="@android:style/Widget">
+        <item name="loadingArcAngle">10</item>
+        <item name="loadingLineColor">@android:color/black</item>
+        <item name="loadingLineStroke">10</item>
+    </style>
+
+</resources>

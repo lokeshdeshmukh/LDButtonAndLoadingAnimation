@@ -1,14 +1,27 @@
 package com.example.sampleprojectlibrary.ui.home
 
+import android.app.Activity
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Rect
+import android.os.Build
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.os.Handler
+import android.os.SystemClock
+import android.util.AttributeSet
+import android.view.*
+import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import com.cchat.ldbuttonsandloadinganimation.LoadingAnimation.SimpleLoadingAnimation
 import com.example.sampleprojectlibrary.R
+import java.util.jar.Attributes
+
 
 class HomeFragment : Fragment() {
 
@@ -26,6 +39,26 @@ class HomeFragment : Fragment() {
         homeViewModel.text.observe(viewLifecycleOwner, Observer {
             textView.text = it
         })
+        var  simpleLoadingAnimation=SimpleLoadingAnimation(context!!)
+        root.findViewById<Button>(R.id.clickme2).setOnClickListener(View.OnClickListener {
+            simpleLoadingAnimation.finish()
+
+        })
+        root.findViewById<Button>(R.id.clickme).setOnClickListener(View.OnClickListener {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                simpleLoadingAnimation.startWithRespectToApplication(requireActivity())
+            }
+            Thread(Runnable {
+                SystemClock.sleep(3000)
+                activity?.runOnUiThread(Runnable {
+                    simpleLoadingAnimation.finish()
+                })
+            }).start()
+
+        })
+
         return root
     }
+
+
 }
