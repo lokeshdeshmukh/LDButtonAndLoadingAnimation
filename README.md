@@ -28,11 +28,11 @@ How to use without Blur Animation:
     
      simpleLoadingAnimation.startWithRespectToApplication(requireActivity(),temp)
 
-<img src="https://github.com/lokeshdeshmukh/LDButtonAndLoadingAnimation/blob/master/Screenshot4.png" height="356" width="200"><img src="https://github.com/lokeshdeshmukh/LDButtonAndLoadingAnimation/blob/master/Screenshot2.png" height="356" width="200"><img src="https://github.com/lokeshdeshmukh/LDButtonAndLoadingAnimation/blob/master/Screenshot3.png" height="356" width="200">
+<img src="https://github.com/lokeshdeshmukh/LDButtonAndLoadingAnimation/blob/master/Screenshot4.png" height="356" width="170"><img src="https://github.com/lokeshdeshmukh/LDButtonAndLoadingAnimation/blob/master/Screenshot2.png" height="356" width="170"><img src="https://github.com/lokeshdeshmukh/LDButtonAndLoadingAnimation/blob/master/Screenshot3.png" height="356" width="170">
 
 How To Use Without BlurAnimation
 
-<img src="https://github.com/lokeshdeshmukh/LDButtonAndLoadingAnimation/blob/master/Screenshot1.png" height="356" width="200">
+<img src="https://github.com/lokeshdeshmukh/LDButtonAndLoadingAnimation/blob/master/Screenshot1.png" height="356" width="170">
 
     
 
