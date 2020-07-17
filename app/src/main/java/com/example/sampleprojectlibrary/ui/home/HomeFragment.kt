@@ -39,21 +39,22 @@ class HomeFragment : Fragment() {
         homeViewModel.text.observe(viewLifecycleOwner, Observer {
             textView.text = it
         })
-        var  simpleLoadingAnimation=SimpleLoadingAnimation(context!!)
+        var  simpleLoadingAnimation=SimpleLoadingAnimation(requireContext())
         root.findViewById<Button>(R.id.clickme2).setOnClickListener(View.OnClickListener {
             simpleLoadingAnimation.finish()
 
         })
         root.findViewById<Button>(R.id.clickme).setOnClickListener(View.OnClickListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                simpleLoadingAnimation.startWithRespectToApplication(requireActivity())
+                var temp=ArrayList<String>()
+                temp.add("Please Wait")
+                temp.add("While We Are")
+                temp.add("Processing Your Request")
+
+
+                simpleLoadingAnimation.startWithRespectToApplication(requireActivity(),temp)
             }
-            Thread(Runnable {
-                SystemClock.sleep(3000)
-                activity?.runOnUiThread(Runnable {
-                    simpleLoadingAnimation.finish()
-                })
-            }).start()
+
 
         })
 

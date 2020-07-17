@@ -6,15 +6,22 @@ import android.app.Activity
 import android.content.Context
 import android.graphics.*
 import android.os.Build
+import android.os.Handler
+import android.renderscript.Allocation
+import android.renderscript.Element
+import android.renderscript.RenderScript
+import android.renderscript.ScriptIntrinsicBlur
 import android.view.MotionEvent
+import android.view.PixelCopy
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.LinearInterpolator
+import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.annotation.RequiresApi
+import androidx.annotation.WorkerThread
 import androidx.core.content.ContextCompat
 
 
-class SimpleLoadingAnimation(context: Context) : View(context) {
+class SimpleLoadingAnimationWithBlur(context: Context) : View(context) {
 
     private val buttonDefaultPaint: Paint = Paint()
     private val iconPaint: Paint = Paint()
@@ -26,8 +33,8 @@ class SimpleLoadingAnimation(context: Context) : View(context) {
 
     private var finish: Boolean = false
     private val topSemiRect: RectF = RectF()
-    private var messageArray = ArrayList<String>()
 
+    var backgroundBitmap: Bitmap? = null
     var textBitmap: Bitmap? = null
 
     private var isTouchBottom = false
@@ -36,8 +43,6 @@ class SimpleLoadingAnimation(context: Context) : View(context) {
     private var loadingDotCounter: Int = 1
     private var loadingText = "Loading"
     var viewGroup: ViewGroup? = null
-    var loadingTextTemp = ""
-    var loadingTextAnimation = ""
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
@@ -50,10 +55,9 @@ class SimpleLoadingAnimation(context: Context) : View(context) {
             ((width / 3).toFloat() * 2),
             (height / 3).toFloat() + ((width / 3).toFloat() * 2) - ((width / 3).toFloat())
         )
-        //setting background color and opacity
-        setBackgroundColor(Color.WHITE)
-        alpha = 0.8f
-
+        backgroundBitmap?.apply {
+            canvas.drawBitmap(this, 0f, 0f, iconPaint)
+        }
         var currentRadius = initialRadius + waveRadiusOffset
         canvas.drawCircle(
             ((width / 3) + ((width / 3).toFloat() * 2)) / 2,
@@ -68,51 +72,24 @@ class SimpleLoadingAnimation(context: Context) : View(context) {
             canvas.drawArc(topSemiRect, currentRadius, 10f, false, iconPaint)
             currentRadius += waveGap
 
+            if (loadingDotCounter < 4)
+                loadingDotCounter++;
+            else
+                loadingDotCounter = 1;
 
         }
         if (finish) {
             visibility = View.GONE
         }
-
-        loadingTextTemp = loadingText + ".".repeat(textOffset.toInt() + 1);
-        if (messageArray.size > textOffset.toInt())
-            loadingTextAnimation = messageArray.get(textOffset.toInt())
-
-
-
+        var loadingTextTemp = loadingText + ".".repeat(loadingDotCounter);
         canvas.drawText(
             loadingTextTemp,
             (((width / 3) + ((width / 3).toFloat() * 2)) / 2) - 100,
             (height / 3).toFloat() + ((width / 3).toFloat() * 2) - ((width / 3).toFloat()) + 100.0f,
             textPaint
         );
-        if (messageArray.size > textOffset.toInt())
-            drawCenter(canvas, textPaint, loadingTextAnimation, Rect(), waveRadiusOffset)
 
-    }
 
-    private fun drawCenter(
-        canvas: Canvas,
-        paint: Paint,
-        text: String,
-        r: Rect,
-        opacityOffSet: Float
-    ) {
-        canvas.getClipBounds(r)
-        val cHeight: Int = r.height()
-        val cWidth: Int = r.width()
-        paint.textSize = 60.toFloat()
-        paint.textAlign = Paint.Align.LEFT
-        paint.getTextBounds(text, 0, text.length, r)
-
-        if ((360 - opacityOffSet) < 105) {
-            paint.alpha = (360 - opacityOffSet).toInt()
-        } else {
-            paint.alpha = (opacityOffSet).toInt()
-        }
-        val x: Float = cWidth / 2f - r.width() / 2f - r.left
-        val y: Float = cHeight / 2f + r.height() / 2f - r.bottom + 300
-        canvas.drawText(text, x, y, paint)
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -208,15 +185,7 @@ class SimpleLoadingAnimation(context: Context) : View(context) {
     }
 
     private var waveAnimator: ValueAnimator? = null
-    private var textAnimatior: ValueAnimator? = null
-
     private var waveRadiusOffset = 0f
-        set(value) {
-            field = value
-            postInvalidateOnAnimation()
-        }
-
-    private var textOffset = 0f
         set(value) {
             field = value
             postInvalidateOnAnimation()
@@ -242,14 +211,10 @@ class SimpleLoadingAnimation(context: Context) : View(context) {
         This function will start animation on root level
         i.e Including Top Navigation Bar
      */
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     fun startWithRespectToApplication(activity: Activity) {
-        startWithRespectToApplication(activity,messageArray)
-    }
-    fun startWithRespectToApplication(activity: Activity, stringArray: ArrayList<String>) {
-        messageArray.clear()
-        messageArray.addAll(stringArray)
 
-        if (viewGroup != null) {
+        if(viewGroup!=null){
             viewGroup?.removeView(this)
         }
         viewGroup = activity.window.decorView as ViewGroup
@@ -262,25 +227,119 @@ class SimpleLoadingAnimation(context: Context) : View(context) {
             duration = 2000L
             repeatMode = ValueAnimator.RESTART
             repeatCount = ValueAnimator.INFINITE
-            interpolator = LinearInterpolator()
+            interpolator = AccelerateDecelerateInterpolator()
             start()
         }
-        textAnimatior = ValueAnimator.ofFloat(0f, 3.0f).apply {
-            addUpdateListener {
-                textOffset = it.animatedValue as Float
-            }
-            duration = 6000L
-            repeatMode = ValueAnimator.RESTART
-            repeatCount = ValueAnimator.INFINITE
-            interpolator = LinearInterpolator()
-            start()
-        }
-
-
 
         visibility = View.VISIBLE
         var uiview = activity?.findViewById<View>(android.R.id.content)?.getRootView()!!
+        backgroundBitmap = getBitmapFromView(uiview, Color.WHITE)
 
+    }
+
+    /*
+    Pass @activity veriable
+    This function will start animation on the provided UI
+    @view : Will be root view object
+    */
+
+    fun startWithRespectToUI(view: View, activity: Activity) {
+
+        if(viewGroup!=null){
+            viewGroup?.removeView(this)
+        }
+        viewGroup = activity.window.decorView as ViewGroup
+        viewGroup?.addView(this)
+
+        finish = false
+        waveAnimator = ValueAnimator.ofFloat(0f, waveGap).apply {
+            addUpdateListener {
+                waveRadiusOffset = it.animatedValue as Float
+            }
+            duration = 1000L
+            repeatMode = ValueAnimator.RESTART
+            repeatCount = ValueAnimator.INFINITE
+            interpolator = AccelerateDecelerateInterpolator()
+            start()
+        }
+
+        visibility = View.VISIBLE
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            backgroundBitmap = getBitmapFromView(view, Color.WHITE)
+        }
+
+    }
+
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    @WorkerThread
+    open fun getBitmapFromView(view: View, defaultColor: Int): Bitmap? {
+        var bitmap =
+            Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
+        var canvas = Canvas(bitmap)
+        canvas.drawColor(defaultColor)
+        view.draw(canvas)
+
+        return blurBitmap(bitmap, context)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    @WorkerThread
+    fun blurBitmap(bitmap: Bitmap, applicationContext: Context): Bitmap {
+        lateinit var rsContext: RenderScript
+        try {
+
+            // Create the output bitmap
+            val output = Bitmap.createBitmap(
+                bitmap.width, bitmap.height, bitmap.config
+            )
+
+            // Blur the image
+            rsContext = RenderScript.create(applicationContext, RenderScript.ContextType.DEBUG)
+            val inAlloc = Allocation.createFromBitmap(rsContext, bitmap)
+            val outAlloc = Allocation.createTyped(rsContext, inAlloc.type)
+            val theIntrinsic = ScriptIntrinsicBlur.create(rsContext, Element.U8_4(rsContext))
+            theIntrinsic.apply {
+                setRadius(25f)
+                theIntrinsic.setInput(inAlloc)
+                theIntrinsic.forEach(outAlloc)
+            }
+            outAlloc.copyTo(output)
+
+            return output
+        } finally {
+            rsContext.finish()
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun getBitmapFromView(view: View, activity: Activity, callback: (Bitmap) -> Unit) {
+        activity.window?.let { window ->
+            val bitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
+            val locationOfViewInWindow = IntArray(2)
+            view.getLocationInWindow(locationOfViewInWindow)
+            try {
+                PixelCopy.request(
+                    window,
+                    Rect(
+                        locationOfViewInWindow[0],
+                        locationOfViewInWindow[1],
+                        locationOfViewInWindow[0] + view.width,
+                        locationOfViewInWindow[1] + view.height
+                    ),
+                    bitmap,
+                    { copyResult ->
+                        if (copyResult == PixelCopy.SUCCESS) {
+                            callback(bitmap)
+                        }
+                        // possible to handle other result codes ...
+                    },
+                    Handler()
+                )
+            } catch (e: IllegalArgumentException) {
+                // PixelCopy may throw IllegalArgumentException, make sure to handle it
+                e.printStackTrace()
+            }
+        }
     }
 
 }
