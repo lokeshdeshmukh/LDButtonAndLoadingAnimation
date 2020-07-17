@@ -13,7 +13,7 @@ Step 2. Add the dependency
 	dependencies {
 	        implementation 'com.github.lokeshdeshmukh:LDButtonAndLoadingAnimation:Tag'
 	}
-How to use  Blur Animation:
+<b>How to use With Blur Animation:</b>
     
      var  simpleLoadingAnimationWithBlur=SimpleLoadingAnimationWithBlur(requireContext()) //Initalize
      
@@ -35,7 +35,7 @@ How to use  Blur Animation:
      
 <img src="https://github.com/lokeshdeshmukh/LDButtonAndLoadingAnimation/blob/master/Screenshot5.png" height="342" width="170">                              <img src="https://github.com/lokeshdeshmukh/LDButtonAndLoadingAnimation/blob/master/Screenshot6.png" height="342" width="170">
 
-How to use without Blur Animation:
+<b>How to use without Blur Animation:</b>
 
     initalize the variable:    
 
