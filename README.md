@@ -18,9 +18,7 @@ How to use blur Animation:
      simpleLoadingAnimation.startWithRespectToApplication(requireActivity(),temp)
 
 <img src="https://github.com/lokeshdeshmukh/LDButtonAndLoadingAnimation/blob/master/Screenshot4.png" height="356" width="200">
-
 <img src="https://github.com/lokeshdeshmukh/LDButtonAndLoadingAnimation/blob/master/Screenshot2.png" height="356" width="200">
-
 <img src="https://github.com/lokeshdeshmukh/LDButtonAndLoadingAnimation/blob/master/Screenshot3.png" height="356" width="200">
 
 How To Use Without BlurAnimation
